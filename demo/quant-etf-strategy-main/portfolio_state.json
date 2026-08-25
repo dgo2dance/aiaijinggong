@@ -1,0 +1,12 @@
+{
+  "cash_cny": 8490.3,
+  "positions": {
+    "511260": 300
+  },
+  "entry_prices": {
+    "511260": 134.86
+  },
+  "peak_value": 54939.9,
+  "last_update": "2026-07-24 09:09:18",
+  "cooldown_until": null
+}
