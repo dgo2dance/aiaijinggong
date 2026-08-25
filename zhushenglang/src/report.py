@@ -20,7 +20,13 @@ def build_report(csv_path: str, top_n: int = 12, out_html: str = None):
         core = pd.concat([core, obs])
     top = core.head(top_n)
 
-    templates = build_templates()
+    try:
+        templates = build_templates()
+    except Exception as e:
+        print(f"构建模板失败: {e}")
+        print("生成简化报告（无走势图）")
+        return _build_simple_report(df, top, out_html)
+
     tmpl_pre = templates["pre"]["price_seq"]
     tmpl_post = templates["post"]["price_seq"]
     launch_date = templates["launch_date"]
@@ -145,6 +151,49 @@ th{{background:#f5f5f5}}
     with open(out_html, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"报告已生成: {out_html}")
+    return out_html
+
+
+def _build_simple_report(df, top, out_html):
+    table_rows = ""
+    for _, r in top.iterrows():
+        color = "#fff3e0" if "刚启动" in str(r["分类"]) else ("#e8f5e9" if "启动前" in str(r["分类"]) else "#fff")
+        table_rows += (
+            f'<tr style="background:{color}">'
+            f'<td>{r["代码"]}</td><td>{r["名称"]}</td><td>{r["现价"]}</td>'
+            f'<td>{r["流通市值(亿)"]}</td><td>{r["分类"]}</td>'
+            f'<td><b>{r["拉升相似度"]}</b></td><td>{r["蓄势相似度"]}</td>'
+            f'<td>{r["匹配段相关"]}</td><td>{r["匹配段DTW"]}</td></tr>'
+        )
+
+    html = f"""<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>艾艾精工形态相似扫描报告</title>
+<style>
+body{{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;margin:24px;background:#fafafa;color:#333}}
+h1{{font-size:22px}} h2{{font-size:16px;margin-top:28px}}
+table{{border-collapse:collapse;width:100%;background:#fff;font-size:13px}}
+th,td{{border:1px solid #e0e0e0;padding:6px 10px;text-align:center}}
+th{{background:#f5f5f5}}
+.note{{background:#fff8e1;padding:10px 14px;border-left:4px solid #ffb300;font-size:13px;margin:14px 0}}
+</style></head>
+<body>
+<h1>艾艾精工形态相似扫描报告</h1>
+<p>生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
+<div class="note">模板数据获取失败，仅显示数据表格。</div>
+<h2>命中明细（Top {len(top)}）</h2>
+<table>
+<tr><th>代码</th><th>名称</th><th>现价</th><th>流通市值(亿)</th><th>分类</th>
+<th>拉升相似度</th><th>蓄势相似度</th><th>形状相关</th><th>DTW距离</th></tr>
+{table_rows}
+</table>
+<p class="note">数据源：新浪行情（不复权）。本报告仅为形态量化筛选结果，不构成投资建议。</p>
+</body></html>"""
+
+    out_html = out_html or f"aiai_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html"
+    with open(out_html, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"简化报告已生成: {out_html}")
     return out_html
 
 

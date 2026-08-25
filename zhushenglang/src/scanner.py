@@ -29,7 +29,7 @@ def scan(pool: pd.DataFrame, templates: dict, limit: int = 0,
     df = pool.copy()
     df["code"] = df["code"].astype(str).str.zfill(6)
     if exclude_bj:
-        df = df[~df["code"].str.startswith(("4", "8", "92"))]
+        df = df[~df["code"].str.startswith(("4", "8", "92", "688"))]
     has_mkt = "float_mktcap_wan" in df.columns
     if min_mktcap > 0 and has_mkt:
         df = df[df["float_mktcap_wan"] >= min_mktcap * 10000]
