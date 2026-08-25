@@ -12,7 +12,7 @@
 
 ## 报告查看
 
-启用 GitHub Pages 后访问：`https://<username>.github.io/zhushenglang/`
+访问地址：**https://dgo2dance.github.io/zhushenglang/**
 
 ## 手动运行
 
