@@ -64,3 +64,7 @@ git push origin main
 ssh-keygen -R github.com
 git remote set-url origin git@github.com:dgo2dance/aiaijinggong.git
 git push origin main
+
+PUSHPLUS_TOKEN
+
+0a1fe62963104cfdabda5fdc71187f31

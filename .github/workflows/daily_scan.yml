@@ -26,6 +26,8 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: write
+    env:
+      PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
 
     steps:
       - name: "Checkout repository"
@@ -40,10 +42,16 @@ jobs:
       - name: "Install dependencies"
         run: pip install --upgrade pip && pip install -r zhushenglang/requirements.txt
 
+      - name: "Debug: Check PushPlus token"
+        run: |
+          if [ -z "$PUSHPLUS_TOKEN" ]; then
+            echo "WARNING: PUSHPLUS_TOKEN is not set!"
+          else
+            echo "PUSHPLUS_TOKEN is set (length: ${#PUSHPLUS_TOKEN})"
+          fi
+
       - name: "Run pattern scanner"
         id: scan
-        env:
-          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
         run: |
           cd zhushenglang
           python3 -m src.scanner \
@@ -57,12 +65,17 @@ jobs:
       - name: "Generate HTML report"
         run: |
           cd zhushenglang
+          echo "Checking outputs directory..."
+          ls -la outputs/ || echo "outputs dir not found"
           LATEST_CSV=$(ls -t outputs/aiai_pattern_scan_*.csv 2>/dev/null | head -1)
+          echo "Latest CSV: $LATEST_CSV"
           if [ -z "$LATEST_CSV" ]; then
             echo "No CSV found, skipping report"
             exit 0
           fi
-          python3 -m src.report "$LATEST_CSV" "docs/aiai_report_$(date '+%Y%m%d_%H%M').html"
+          echo "Generating report..."
+          python3 -m src.report "$LATEST_CSV" "docs/aiai_report_$(date '+%Y%m%d_%H%M').html" || echo "Report generation failed"
+          ls -la docs/
         continue-on-error: true
 
       - name: "Update index page"
