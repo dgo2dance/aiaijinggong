@@ -13,6 +13,7 @@ from src.template import build_templates, detect_launch_day
 
 
 def build_report(csv_path: str, top_n: int = 12, out_html: str = None):
+    print(f"[Report] csv_path={csv_path}, out_html={out_html}")
     df = pd.read_csv(csv_path)
     core = df[df["分类"].isin(["刚启动(拉升初期)", "启动前(蓄势中)"])]
     if len(core) < top_n:
@@ -155,6 +156,7 @@ th{{background:#f5f5f5}}
 
 
 def _build_simple_report(df, top, out_html):
+    print(f"[SimpleReport] out_html={out_html}")
     table_rows = ""
     for _, r in top.iterrows():
         color = "#fff3e0" if "刚启动" in str(r["分类"]) else ("#e8f5e9" if "启动前" in str(r["分类"]) else "#fff")
@@ -200,4 +202,6 @@ th{{background:#f5f5f5}}
 if __name__ == "__main__":
     import sys, glob
     csv_path = sys.argv[1] if len(sys.argv) > 1 else sorted(glob.glob("outputs/aiai_pattern_scan_*.csv"))[-1]
-    build_report(csv_path)
+    out_path = sys.argv[2] if len(sys.argv) > 2 else None
+    print(f"[Report Main] csv_path={csv_path}, out_path={out_path}")
+    build_report(csv_path, out_html=out_path)
