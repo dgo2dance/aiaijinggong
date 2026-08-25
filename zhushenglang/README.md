@@ -14,8 +14,6 @@
 
 访问地址：**https://dgo2dance.github.io/aiaijinggong/**
 
-> 注意：仓库名是 `aiaijinggong`，不是 `zhushenglang`
-
 ## 手动运行
 
 ```bash
@@ -38,7 +36,7 @@ python3 -m src.report outputs/aiai_pattern_scan_xxx.csv docs/report.html
 
 1. 打开仓库 Settings → Pages
 2. Source 选择 `master` 分支
-3. **Folder 选择 `/zhushenglang/docs`**（重要！）
+3. Folder 选择 `/docs`
 4. 点击 Save
 5. 等待 1-2 分钟后访问：https://dgo2dance.github.io/aiaijinggong/
 
