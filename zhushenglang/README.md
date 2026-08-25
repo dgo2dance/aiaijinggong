@@ -5,14 +5,16 @@
 ## 功能
 
 - 自动检测艾艾精工启动日，构建蓄势段+拉升段双模板
-- 并发扫描全A股（新浪行情），DTW+相关+量能多维匹配
+- 并发扫描全A股（新浪+腾讯+akshare），DTW+相关+量能多维匹配
 - 生成可视化 HTML 报告（走势叠加对比图 + 明细表）
 - GitHub Actions 每日16:00自动运行，报告发布到 GitHub Pages
 - 微信 PushPlus 推送 Top 10 命中标的
 
 ## 报告查看
 
-访问地址：**https://dgo2dance.github.io/zhushenglang/**
+访问地址：**https://dgo2dance.github.io/aiaijinggong/**
+
+> 注意：仓库名是 `aiaijinggong`，不是 `zhushenglang`
 
 ## 手动运行
 
@@ -32,13 +34,18 @@ python3 -m src.scanner --pool csv --limit 7
 python3 -m src.report outputs/aiai_pattern_scan_xxx.csv docs/report.html
 ```
 
+## GitHub Pages 配置
+
+1. 打开仓库 Settings → Pages
+2. Source 选择 `master` 分支
+3. **Folder 选择 `/zhushenglang/docs`**（重要！）
+4. 点击 Save
+5. 等待 1-2 分钟后访问：https://dgo2dance.github.io/aiaijinggong/
+
 ## GitHub Actions 配置
 
-1. 推送到 GitHub 仓库
-2. Settings → Pages → Source 选择 `master` 分支 `/docs` 目录
-3. Settings → Secrets and variables → Actions 中添加 Secret：
-   - `PUSHPLUS_TOKEN`：PushPlus 用户 Token（从 [pushplus.plus](https://www.pushplus.plus) 获取）
-4. 工作流会自动运行，也可在 Actions 页面手动触发
+Settings → Secrets and variables → Actions 中添加 Secret：
+- `PUSHPLUS_TOKEN`：PushPlus 用户 Token（从 [pushplus.plus](https://www.pushplus.plus) 获取）
 
 ## 分类说明
 
@@ -51,21 +58,4 @@ python3 -m src.report outputs/aiai_pattern_scan_xxx.csv docs/report.html
 ## 依赖
 
 - Python 3.9+
-- pandas / numpy / requests
-
-
-
-
-# 方法1: HTTPS
-git remote set-url origin https://github.com/dgo2dance/aiaijinggong.git
-git push origin main
-
-# 方法2: SSH（需要先更新 known_hosts）
-ssh-keygen -R github.com
-git remote set-url origin git@github.com:dgo2dance/aiaijinggong.git
-git push origin main
-
-PUSHPLUS_TOKEN
-
-0a1fe62963104cfdabda5fdc71187f31
-
+- pandas / numpy / requests / akshare

@@ -52,30 +52,23 @@ jobs:
 
       - name: "Run pattern scanner"
         id: scan
-        run: |
-          cd zhushenglang
-          python3 -m src.scanner \
-            --pool "${{ github.event.inputs.pool || 'sina' }}" \
-            --limit "${{ github.event.inputs.limit || '0' }}" \
-            --workers 12 --min-score 50 --push \
-            --out "outputs/aiai_pattern_scan_$(date '+%Y%m%d_%H%M').csv" \
-            2>&1 | tee scan_output.txt
+        run: cd zhushenglang && python3 -m src.scanner \
+          --pool "${{ github.event.inputs.pool || 'sina' }}" \
+          --limit "${{ github.event.inputs.limit || '0' }}" \
+          --workers 12 --min-score 50 --push \
+          --out "outputs/aiai_pattern_scan_$(date '+%Y%m%d_%H%M').csv" \
+          2>&1 | tee scan_output.txt
         continue-on-error: true
 
       - name: "Generate HTML report"
         run: |
           cd zhushenglang
-          echo "Checking outputs directory..."
-          ls -la outputs/ || echo "outputs dir not found"
           LATEST_CSV=$(ls -t outputs/aiai_pattern_scan_*.csv 2>/dev/null | head -1)
-          echo "Latest CSV: $LATEST_CSV"
           if [ -z "$LATEST_CSV" ]; then
             echo "No CSV found, skipping report"
             exit 0
           fi
-          echo "Generating report..."
-          python3 -m src.report "$LATEST_CSV" "docs/aiai_report_$(date '+%Y%m%d_%H%M').html" || echo "Report generation failed"
-          ls -la docs/
+          python3 -m src.report "$LATEST_CSV" "docs/aiai_report_$(date '+%Y%m%d_%H%M').html"
         continue-on-error: true
 
       - name: "Update index page"
@@ -86,14 +79,13 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "GitHub Actions Bot"
-          cd zhushenglang
-          git add docs/ outputs/ cache/ || true
+          git add zhushenglang/docs/ zhushenglang/outputs/ zhushenglang/cache/ || true
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
             git commit -m "Auto-scan report $(date '+%Y-%m-%d %H:%M')"
             git pull --rebase origin main
-            git push
+            git push origin main
           fi
         continue-on-error: true
 
