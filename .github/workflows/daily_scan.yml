@@ -75,11 +75,19 @@ jobs:
         run: cd zhushenglang && python3 update_index.py
         continue-on-error: true
 
+      - name: "Copy reports to root docs for GitHub Pages"
+        run: |
+          mkdir -p docs
+          cp zhushenglang/docs/aiai_report_*.html docs/ 2>/dev/null || true
+          cp zhushenglang/docs/index.html docs/ 2>/dev/null || true
+          ls -la docs/
+        continue-on-error: true
+
       - name: "Commit and push reports"
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "GitHub Actions Bot"
-          git add zhushenglang/docs/ zhushenglang/outputs/ zhushenglang/cache/ || true
+          git add docs/ zhushenglang/docs/ zhushenglang/outputs/ zhushenglang/cache/ || true
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
@@ -97,5 +105,5 @@ jobs:
           path: |
             zhushenglang/scan_output.txt
             zhushenglang/outputs/*.csv
-            zhushenglang/docs/*.html
+            docs/*.html
           retention-days: 30
