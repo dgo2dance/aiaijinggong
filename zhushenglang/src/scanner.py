@@ -150,8 +150,10 @@ def main():
     if not out.empty:
         print("\n===== 相似形态 Top 20 =====")
         print(out.head(20).to_string(index=False))
+    else:
+        print("\n本次扫描未发现符合条件的标的")
 
-    if args.push and not out.empty:
+    if args.push:
         print("\n推送微信通知...")
         push_scan_results(out, templates)
 

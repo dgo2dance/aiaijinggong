@@ -66,9 +66,7 @@ jobs:
         continue-on-error: true
 
       - name: "Update index page"
-        run: |
-          cd zhushenglang
-          python3 update_index.py
+        run: cd zhushenglang && python3 update_index.py
         continue-on-error: true
 
       - name: "Commit and push reports"
@@ -76,7 +74,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "GitHub Actions Bot"
           cd zhushenglang
-          git add docs/ outputs/
+          git add docs/ outputs/ cache/ || true
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

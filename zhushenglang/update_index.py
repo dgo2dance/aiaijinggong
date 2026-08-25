@@ -4,9 +4,17 @@ import os
 import glob
 
 def update_index():
+    print(f"当前工作目录: {os.getcwd()}")
+    print(f"docs目录是否存在: {os.path.exists('docs')}")
+
+    if os.path.exists('docs'):
+        print(f"docs目录内容: {os.listdir('docs')}")
+
     reports = sorted(glob.glob("docs/aiai_report_*.html"), reverse=True)
+    print(f"找到报告文件: {len(reports)} 个")
+
     if not reports:
-        print("No reports found")
+        print("No reports found in docs/")
         return
 
     links = ""
