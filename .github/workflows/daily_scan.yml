@@ -65,7 +65,7 @@ jobs:
             echo "No CSV found, skipping report"
             exit 0
           fi
-          python3 -m src.report "$LATEST_CSV" "docs/aiai_report_$(date '+%Y%m%d_%H%M').html"
+          python3 -m src.report "$LATEST_CSV" "docs/aiai_report_$(date '+%Y%m%d').html"
         continue-on-error: true
 
       - name: "Update index page"

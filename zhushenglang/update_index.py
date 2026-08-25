@@ -21,7 +21,12 @@ def update_index():
     for r in reports[:30]:
         name = os.path.basename(r)
         date_part = name.replace("aiai_report_", "").replace(".html", "")
-        links += f'    <li><a href="{name}">{date_part}</a></li>\n'
+        # 格式化日期显示：20260825 -> 2026-08-25
+        if len(date_part) == 8 and date_part.isdigit():
+            date_display = f"{date_part[:4]}-{date_part[4:6]}-{date_part[6:8]}"
+        else:
+            date_display = date_part
+        links += f'    <li><a href="{name}">{date_display}</a></li>\n'
 
     html = f'''<!DOCTYPE html>
 <html lang="zh">

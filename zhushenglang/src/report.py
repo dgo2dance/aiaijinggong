@@ -148,7 +148,7 @@ th{{background:#f5f5f5}}
 <p class="note">数据源：新浪行情（不复权）。本报告仅为形态量化筛选结果，不构成投资建议。</p>
 </body></html>"""
 
-    out_html = out_html or f"aiai_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html"
+    out_html = out_html or f"aiai_report_{datetime.now().strftime('%Y%m%d')}.html"
     with open(out_html, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"报告已生成: {out_html}")
@@ -192,7 +192,7 @@ th{{background:#f5f5f5}}
 <p class="note">数据源：新浪行情（不复权）。本报告仅为形态量化筛选结果，不构成投资建议。</p>
 </body></html>"""
 
-    out_html = out_html or f"aiai_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html"
+    out_html = out_html or f"aiai_report_{datetime.now().strftime('%Y%m%d')}.html"
     with open(out_html, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"简化报告已生成: {out_html}")
