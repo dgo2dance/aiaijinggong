@@ -1,8 +1,8 @@
 """
-数据获取模块 v2（新浪行情接口）+ 本地股票池辅助
+数据获取模块 v3
 
-数据策略：
-- K 线：新浪公开接口（沙箱环境可访问）
+数据策略（三级 fallback）：
+- K 线：新浪 → 腾讯 → akshare
 - 股票池：通过本地内置文件 / 用户传入 CSV / akshare(tushare) 离线库三种来源
 """
 
@@ -67,7 +67,55 @@ def get_kline_tencent(code: str, days: int = 320) -> Optional[pd.DataFrame]:
         return None
 
 
+def get_kline_akshare(code: str, days: int = 300) -> Optional[pd.DataFrame]:
+    """akshare 接口获取K线（最稳定）"""
+    try:
+        import akshare as ak
+        from datetime import datetime, timedelta
+
+        end_date = datetime.now().strftime("%Y%m%d")
+        start_date = (datetime.now() - timedelta(days=days * 2)).strftime("%Y%m%d")
+
+        df = ak.stock_zh_a_hist_tx(
+            symbol=code,
+            start_date=start_date,
+            end_date=end_date,
+            adjust="qfq"
+        )
+
+        if df is None or df.empty:
+            return None
+
+        df = df.rename(columns={
+            "日期": "date",
+            "开盘": "open",
+            "收盘": "close",
+            "最高": "high",
+            "最低": "low",
+            "成交量": "volume",
+        })
+
+        for col in ["open", "high", "low", "close", "volume"]:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+        df["date"] = pd.to_datetime(df["date"])
+        df = df.sort_values("date").reset_index(drop=True)
+        df["pct_chg"] = df["close"].pct_change() * 100
+        df["amount"] = df["close"] * df["volume"] * 100
+
+        df = df.tail(days)
+        return df[["date", "open", "high", "low", "close", "volume", "pct_chg", "amount"]]
+    except ImportError:
+        print("[WARN] akshare 未安装")
+        return None
+    except Exception as e:
+        print(f"[ERR-AK] {code} 获取失败: {e}")
+        return None
+
+
 def get_kline(code: str, days: int = 300) -> Optional[pd.DataFrame]:
+    """获取日K线：新浪 → 腾讯 → akshare 三级 fallback"""
+    # 1. 新浪接口
     symbol = _to_sina_symbol(code)
     url = (
         f"https://quotes.sina.cn/cn/api/openapi.php/"
@@ -94,7 +142,14 @@ def get_kline(code: str, days: int = 300) -> Optional[pd.DataFrame]:
                 return df[["date", "open", "high", "low", "close", "volume", "pct_chg", "amount"]]
     except Exception:
         pass
-    return get_kline_tencent(code, days=days)
+
+    # 2. 腾讯接口
+    result = get_kline_tencent(code, days=days)
+    if result is not None:
+        return result
+
+    # 3. akshare 接口（最稳定）
+    return get_kline_akshare(code, days=days)
 
 
 def get_stock_list_sina(pages: int = 60, per_page: int = 100) -> pd.DataFrame:
