@@ -2,7 +2,6 @@ name: "每日形态扫描"
 
 on:
   schedule:
-    # 每周一至周五 16:00 北京时间 = UTC 08:00
     - cron: '0 8 * * 1-5'
   workflow_dispatch:
     inputs:
@@ -39,27 +38,23 @@ jobs:
           cache: 'pip'
 
       - name: "Install dependencies"
-        run: |
-          pip install --upgrade pip
-          pip install -r zhushenglang/requirements.txt
+        run: pip install --upgrade pip && pip install -r zhushenglang/requirements.txt
 
       - name: "Run pattern scanner"
         id: scan
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
         run: |
-          POOL="${{ github.event.inputs.pool || 'sina' }}"
-          LIMIT="${{ github.event.inputs.limit || '0' }}"
-          echo "Running scan: pool=$POOL limit=$LIMIT"
           cd zhushenglang
-          python3 -m src.scanner --pool "$POOL" --limit "$LIMIT" --workers 12 --min-score 50 --push \
+          python3 -m src.scanner \
+            --pool "${{ github.event.inputs.pool || 'sina' }}" \
+            --limit "${{ github.event.inputs.limit || '0' }}" \
+            --workers 12 --min-score 50 --push \
             --out "outputs/aiai_pattern_scan_$(date '+%Y%m%d_%H%M').csv" \
             2>&1 | tee scan_output.txt
-          echo "scan_done=true" >> $GITHUB_OUTPUT
         continue-on-error: true
 
       - name: "Generate HTML report"
-        id: report
         run: |
           cd zhushenglang
           LATEST_CSV=$(ls -t outputs/aiai_pattern_scan_*.csv 2>/dev/null | head -1)
@@ -67,40 +62,13 @@ jobs:
             echo "No CSV found, skipping report"
             exit 0
           fi
-          REPORT_NAME="aiai_report_$(date '+%Y%m%d_%H%M').html"
-          python3 -m src.report "$LATEST_CSV" "docs/$REPORT_NAME"
-          echo "report_name=$REPORT_NAME" >> $GITHUB_OUTPUT
+          python3 -m src.report "$LATEST_CSV" "docs/aiai_report_$(date '+%Y%m%d_%H%M').html"
+        continue-on-error: true
 
-          # Update docs/index.html with latest report link
-          python3 - <<'PYEOF'
-          import os, glob, datetime
-          reports = sorted(glob.glob("docs/aiai_report_*.html"), reverse=True)
-          if not reports:
-              exit(0)
-          links = ""
-          for r in reports[:30]:
-              name = os.path.basename(r)
-              date_part = name.replace("aiai_report_", "").replace(".html", "")
-              links += f'        <li><a href="{name}">{date_part}</a></li>\n'
-          html = f"""<!DOCTYPE html>
-<html lang="zh">
-<head><meta charset="utf-8"><title>艾艾精工形态扫描报告</title>
-<style>
-body{{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;margin:24px;background:#fafafa;color:#333}}
-h1{{font-size:22px}} a{{color:#1a73e8}} ul{{font-size:15px;line-height:2}}
-</style></head>
-<body>
-<h1>艾艾精工形态相似扫描报告</h1>
-<p>每日收盘后自动扫描全A股，找出与艾艾精工走势形态相似的标的。</p>
-<h2>最新报告</h2>
-<ul>
-{links}</ul>
-<p style="color:#999;font-size:12px">自动生成，仅供参考，不构成投资建议。</p>
-</body></html>"""
-          with open("docs/index.html", "w", encoding="utf-8") as f:
-              f.write(html)
-          print(f"Updated index.html with {len(reports)} reports")
-          PYEOF
+      - name: "Update index page"
+        run: |
+          cd zhushenglang
+          python3 update_index.py
         continue-on-error: true
 
       - name: "Commit and push reports"
@@ -112,7 +80,7 @@ h1{{font-size:22px}} a{{color:#1a73e8}} ul{{font-size:15px;line-height:2}}
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m " Auto-scan report $(date '+%Y-%m-%d %H:%M')"
+            git commit -m "Auto-scan report $(date '+%Y-%m-%d %H:%M')"
             git push
           fi
         continue-on-error: true

@@ -52,3 +52,15 @@ python3 -m src.report outputs/aiai_pattern_scan_xxx.csv docs/report.html
 
 - Python 3.9+
 - pandas / numpy / requests
+
+
+
+
+# 方法1: HTTPS
+git remote set-url origin https://github.com/dgo2dance/aiaijinggong.git
+git push origin main
+
+# 方法2: SSH（需要先更新 known_hosts）
+ssh-keygen -R github.com
+git remote set-url origin git@github.com:dgo2dance/aiaijinggong.git
+git push origin main
