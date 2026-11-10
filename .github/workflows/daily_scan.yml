@@ -28,6 +28,7 @@ jobs:
       contents: write
     env:
       PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+      # 推送到生产站 https://etf.vosi.cc（「做T计划」页 → 主升浪 查看）；令牌写死在 site_push.py
 
     steps:
       - name: "Checkout repository"

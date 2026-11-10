@@ -19,6 +19,7 @@ from src.data_source import get_kline, load_stock_pool
 from src.template import build_templates
 from src.matcher import match_stock
 from src.notify import push_scan_results
+from src.site_push import push_scan_to_site
 
 
 def scan(pool: pd.DataFrame, templates: dict, limit: int = 0,
@@ -156,6 +157,9 @@ def main():
     if args.push:
         print("\n推送微信通知...")
         push_scan_results(out, templates)
+
+    print("\n推送每日结果到生产站 (etf.vosi.cc)...")
+    push_scan_to_site(out, templates)
 
 
 if __name__ == "__main__":
